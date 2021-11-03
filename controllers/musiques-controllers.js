@@ -35,8 +35,15 @@ let MUSIQUES = [
   },
 ];
 
-const getMusiques = (req, res, next) => {
-  res.json({ Musique });
+const getMusiques = async (req, res, next) => {
+  let musiques
+  try {
+    musiques = await Musique.find();
+  } catch(err){
+    console.log(err);
+    res.status(404).json({message: "Erreur de traitement"})
+  }
+  res.json({ musiques });
 };
 
 const getMusiqueById = (req, res, next) => {
