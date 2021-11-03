@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -13,4 +14,15 @@ app.use((error, req, res, next) => {
     res.json({message: error.message || 'Une erreur non gérée est survenue'});
 });
 
-app.listen(5000);
+const uri = `mongodb+srv://gretaUser:sUPXIReA7FnjdSQZ@cluster0.ncwlp.mongodb.net/Greta?retryWrites=true&w=majority`
+
+const options = {useNewUrlParser: true, useUnifiedTopology: true}
+
+mongoose.connect(uri, options)
+.then(() => {
+    app.listen(5000, console.log("server running"));
+})
+.catch(err => {
+    console.log(err);
+});
+

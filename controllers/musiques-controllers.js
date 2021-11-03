@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const Musique = require("../models/musique");
 
 let MUSIQUES = [
   {
@@ -35,7 +36,7 @@ let MUSIQUES = [
 ];
 
 const getMusiques = (req, res, next) => {
-  res.json({ MUSIQUES });
+  res.json({ Musique });
 };
 
 const getMusiqueById = (req, res, next) => {
