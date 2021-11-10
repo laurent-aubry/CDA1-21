@@ -43,7 +43,7 @@ const getMusiques = async (req, res, next) => {
     console.log(err);
     res.status(404).json({message: "Erreur de traitement"})
   }
-  res.json({ musiques });
+  res.status(200).json({ musiques: musiques.map( m => m.toObject({getters: true})) });
 };
 
 const getMusiqueById = async (req, res, next) => {
@@ -61,7 +61,7 @@ const getMusiqueById = async (req, res, next) => {
       .status(404)
       .json({ message: "Musique non trouvée pour cet identifiant" });
   }
-  res.json({ musique });
+  res.status(200).json({ musique: musique.toObject({getters: true})  });
 };
 
 const createMusique = async (req, res, next) => {
@@ -86,30 +86,59 @@ const createMusique = async (req, res, next) => {
   // res.status(201).json({musique: "enregistrement effectué"});
   };
 
-  const updateMusique = (req, res, next) =>{
+  const updateMusique = async (req, res, next) =>{
     const { auteur, annee, titre, imageUrl } = req.body;
     const musiqueId = req.params.musiqueId;
 
-    const updatedMusique = { ...MUSIQUES.find((m) => {
-        return m.id === musiqueId;
-    }) };
+    let musique;
+    try {
+      musique = await Musique.findById(musiqueId);
+    } catch(err){
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de la récupétaion de la musique"})
+    }
 
-    const musiqueIndex = MUSIQUES.findIndex(m => m.id === musiqueId);
 
-    updatedMusique.auteur = auteur;
-    updatedMusique.annee = annee;
-    updatedMusique.titre = titre;
-    updatedMusique.imageUrl = imageUrl;
+    musique.auteur = auteur;
+    musique.annee = annee;
+    musique.titre = titre;
+    musique.imageUrl = imageUrl;
 
-    MUSIQUES[musiqueIndex] = updatedMusique;
+    try {
+      await musique.save();
+    } catch(err) {
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de la mise à jour de la musique"})
 
-    res.status(200).json({ musique: updatedMusique });
+    }
+
+    res.status(200).json({ musique: musique.toObject({getters: true}) });
 
 };
 
-const deleteMusique = (req, res, next) => {
+const deleteMusique = async (req, res, next) => {
     const musiqueId = req.params.musiqueId;
-    MUSIQUES = MUSIQUES.filter(m => m.id !== musiqueId);
+    // MUSIQUES = MUSIQUES.filter(m => m.id !== musiqueId);
+    let musique;
+    try {
+      musique = await Musique.findById(musiqueId);
+    } catch(err){
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de la récupération de la musique"})
+    }
+
+    if(!musique){
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de la récupération de la musique"})
+    }
+
+    try{
+      await musique.remove();
+    } catch(err){
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de la suppression de la musique"})
+    }
+
     res.status(200).json({ message: "Musique supprimée !" })
   }
 
