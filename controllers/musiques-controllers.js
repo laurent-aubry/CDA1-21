@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 const Musique = require("../models/musique");
 
 let MUSIQUES = [
@@ -46,11 +46,16 @@ const getMusiques = async (req, res, next) => {
   res.json({ musiques });
 };
 
-const getMusiqueById = (req, res, next) => {
+const getMusiqueById = async (req, res, next) => {
   const mId = req.params.musiqueId;
-  const musique = MUSIQUES.find((m) => {
-    return m.id === mId;
-  });
+  let musique
+  try{
+    musique = await Musique.findById(mId)
+  } catch(err){
+    console.log(err);
+    res.status(404).json({message: "Erreur de lors de la récupération de la musique"})
+  }
+
   if (!musique) {
     return res
       .status(404)
@@ -59,18 +64,24 @@ const getMusiqueById = (req, res, next) => {
   res.json({ musique });
 };
 
-const createMusique = (req, res, next) => {
+const createMusique = async (req, res, next) => {
     const { auteur, annee, titre, imageUrl } = req.body;
-  console.log(req.body);
-    const createdMusique = {
-        id: uuidv4(),
+  // console.log(req.body);
+    const createdMusique = new Musique ({
+        // id: uuidv4(),
         auteur,
         annee ,
         titre,
         imageUrl
-    };
-    console.log(createdMusique);
-    MUSIQUES.push(createdMusique);
+    });
+    // console.log(createdMusique);
+    // MUSIQUES.push(createdMusique);
+    try {
+      await createdMusique.save();
+    } catch(err){
+      console.log(err);
+      res.status(500).json({message: "Erreur lors de l'ajout de la musique"})
+    }
   res.status(201).json({musique: createdMusique});
   // res.status(201).json({musique: "enregistrement effectué"});
   };
